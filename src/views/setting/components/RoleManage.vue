@@ -215,4 +215,5 @@ export default {
   margin-top: 20px;
   margin-bottom: 20px;
 }
+
 </style>

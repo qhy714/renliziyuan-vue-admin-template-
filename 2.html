@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /*  console.log(typeof "abc"); // sstring
+      console.log(typeof 123); // number
+      console.log(typeof(true)); // boolean
+
+      var a = null;
+      console.log(typeof a); // object
+      var ab = [1, 2, 3];
+      console.log(typeof ab); // object
+
+      function Person(){
+        this.name ="张三"
+      }
+      var Star = new Person()
+      console.log(Star instanceof Person); // true
+
+      var str = 'abcdefg'
+      console.log(str.substr(2,3)); // bc
+      console.log(str.substr(-3,2)); // ef
+      console.log(str.substring(2,3)); // b */
+
+      /* var arr = ['a','b','c','d','e']
+      console.log(arr.slice(2,3)); // ['c']
+      console.log(arr.slice(2,4)); //  ['c', 'd']
+      console.log(arr); // ['a', 'b', 'c', 'd', 'e'] */
+
+      var arr = ["a", "b", "c", "d", "e"];
+      // 从索引下标1开始，删除两个元素，改变原素组
+      // console.log(arr.splice(1,2)); // 删除的两个数组  ['b', 'c']
+      // console.log(arr); // 改变了原来的数组  ['a', 'd', 'e']
+      // 从索引下标1开始，删除0个元素，插入hello
+      console.log(arr.splice(1,0,'hello')); // []
+      console.log(arr); //['a', 'hello', 'b', 'c', 'd', 'e']
+    </script>
+  </body>
+</html>

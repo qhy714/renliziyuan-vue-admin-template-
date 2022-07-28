@@ -152,6 +152,17 @@ export const asyncRoutes = [
       name: 'Import',
       component: () => import('@/views/import/index.vue')
     }]
+  },
+  {
+    path: '/employee/detail/:id',
+    component: Layout,
+    hidden: true,
+    children: [{
+      path: '',
+      name: 'EmployeeDetail',
+      component: () => import('@/views/employees/detail.vue'),
+      props: true
+    }]
   }
 
 ]

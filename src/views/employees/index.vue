@@ -15,7 +15,9 @@
             @click="$router.push('/import?type=user')"
             >excel导入</el-button
           >
-          <el-button type="primary" size="mini">新增员工</el-button>
+          <el-button type="primary" size="mini" @click="dialogVisible = true"
+            >新增员工</el-button
+          >
         </template>
       </PageTool>
 
@@ -29,7 +31,12 @@
           ></el-table-column>
           <el-table-column label="头像" prop="staffPhoto">
             <template v-slot="scope">
-              <img v-imgerror :src="scope.row.staffPhoto" style="width: 40px" />
+              <img
+                v-imgerror
+                :src="scope.row.staffPhoto"
+                style="width: 40px"
+                @click="showQrDialog(scope.row.staffPhoto)"
+              />
             </template>
           </el-table-column>
           <el-table-column label="手机号" prop="mobile"></el-table-column>
@@ -58,23 +65,133 @@
             </template>
           </el-table-column>
           <el-table-column label="操作" width="350px" align="center">
-            <template>
-              <el-button type="text">查看</el-button>
+            <template v-slot="scope">
+              <el-button
+                type="text"
+                @click="$router.push('/employee/detail/' + scope.row.id)"
+                >查看</el-button
+              >
               <el-button type="text">转正</el-button>
               <el-button type="text">调岗</el-button>
               <el-button type="text">离职</el-button>
-              <el-button type="text">角色</el-button>
+              <el-button type="text" @click="showRoleDialog(scope.row.id)"
+                >角色</el-button
+              >
               <el-button type="text">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-card>
+      <!-- 分配角色 -->
+      <el-dialog title="分配角色" :visible.sync="roleVisible">
+        <el-checkbox-group v-model="checkList">
+          <el-checkbox
+            v-for="item in roleList"
+            :key="item.id"
+            :label="item.id"
+            >{{ item.name }}</el-checkbox
+          >
+        </el-checkbox-group>
+        <template #footer>
+          <el-button type="primary" @click="assignRoles">确定</el-button>
+          <el-button @click="roleVisible = false">取消</el-button>
+        </template>
+      </el-dialog>
+      <!-- 新增对话框 -->
+      <el-dialog
+        title="提示"
+        :visible.sync="dialogVisible"
+        width="40%"
+        @click="handleClose"
+      >
+        <el-form
+          ref="employeeRef"
+          label-width="30%"
+          :model="addEmployees"
+          :rules="rules"
+        >
+          <el-form-item label="姓名" prop="username">
+            <el-input
+              v-model="addEmployees.username"
+              placeholder="请输入姓名"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="手机号" prop="mobile">
+            <el-input
+              v-model="addEmployees.mobile"
+              placeholder="请输入手机号"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="入职时间" prop="timeOfEntry">
+            <el-date-picker
+              v-model="addEmployees.timeOfEntry"
+              type="date"
+              placeholder="请选择入职时间"
+            ></el-date-picker>
+          </el-form-item>
+          <el-form-item label="聘用形式" prop="formOfEmployment">
+            <el-select
+              v-model="addEmployees.formOfEmployment"
+              placeholder="请选择聘用形式"
+            >
+              <el-option
+                v-for="item in hireType"
+                :key="item.id"
+                :label="item.value"
+                :value="item.id"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="工号" prop="workNumber">
+            <el-input
+              v-model="addEmployees.workNumber"
+              placeholder="请输入工号"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="部门" prop="departmentName">
+            <el-input
+              v-model="addEmployees.departmentName"
+              placeholder="请选择部门"
+              @focus="showDepartment"
+            ></el-input>
+            <el-tree
+              v-if="departmentList.length > 0"
+              :data="departmentList"
+              default-expand-all
+              :props="{ label: 'name' }"
+              @node-click="handleNodeClick"
+            ></el-tree>
+          </el-form-item>
+          <el-form-item label="转正时间" prop="correctionTime">
+            <el-date-picker
+              v-model="addEmployees.correctionTime"
+              type="date"
+              placeholder="请选择转正时间"
+            ></el-date-picker>
+          </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="add">确 定</el-button>
+        </span>
+      </el-dialog>
     </div>
+    <!-- 二维码对话框 -->
+    <el-dialog title="图片二维码" :visible.sync="qrcodeVisible">
+      <el-row type="flex" justify="center">
+        <canvas ref="canvas"></canvas>
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getEmployee } from '@/api/employee'
+import QRCode from 'qrcode'
+import { getDepartmentsList } from '@/api/department'
+import { validMobile } from '@/utils/validate'
+import { getUserDetailById } from '@/api/user'
+import { getRoleList } from '@/api/setting'
+import { getEmployee, AddEmployees, assignRoles } from '@/api/employee'
 import employees from '@/constant/employees'
 export default {
   name: 'Employee',
@@ -85,13 +202,47 @@ export default {
   },
   components: {},
   data () {
+    const validateMobile = (rule, value, callback) => {
+      validMobile(value) ? callback() : callback(new Error('手机号格式不对'))
+    }
     return {
       paramsObj: {
         page: 1,
         size: 9999
       },
       employees: [],
-      total: null
+      total: null,
+      dialogVisible: false,
+      // 分配角色
+      roleVisible: false,
+      checkList: [],
+      roleList: [],
+      id: null,
+
+      addEmployees: {
+        username: '',
+        mobile: '',
+        timeOfEntry: '',
+        formOfEmployment: '',
+        workNumber: '',
+        departmentName: '',
+        correctionTime: ''
+      },
+      rules: {
+        username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        mobile: [
+          { required: true, message: '请输入手机号', trigger: 'blur' },
+          { validator: validateMobile, trigger: 'blur' }
+        ],
+        timeOfEntry: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        formOfEmployment: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        workNumber: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        departmentName: [{ required: true, message: '请输入用户名', trigger: 'blur' }]
+
+      },
+      hireType: employees.hireType,
+      departmentList: [],
+      qrcodeVisible: false
     }
   },
   computed: {},
@@ -174,10 +325,69 @@ export default {
           merges // 设置合并规则
         })
       })
+    },
+
+    async add () {
+      const res = await AddEmployees(this.addEmployees)
+      console.log(res)
+      this.getEmployee()
+      this.dialogVisible = false
+    },
+    async showRoleDialog (id) {
+      this.id = id
+      const { rows } = await getRoleList({ page: 1, size: 9999 })
+      this.roleList = rows
+      const { roleIds } = await getUserDetailById(id)
+      this.checkList = roleIds
+      this.roleVisible = true
+    },
+    async assignRoles () {
+      const res = await assignRoles({
+        id: this.id,
+        roleIds: this.checkList
+      })
+      console.log(res)
+      this.roleVisible = false
+    },
+    handleClose () {
+      this.$refs.employeeRef.resetFields()
+      this.departmentList = []
+    },
+    async showDepartment () {
+      const res = await getDepartmentsList()
+      // 我们的数据不能直接使用，而是先加工处理一下才能使用 递归在写的时候慢慢就意识到了 层次不确定
+      function tranferListToTree (list, pid) {
+        var list1 = []
+        list.forEach(item => {
+          if (item.pid === pid) {
+            list1.push(item)
+            item.children = tranferListToTree(list, item.id)
+          }
+        })
+        return list1
+      }
+      this.departmentList = tranferListToTree(res.depts, '')
+    },
+    handleNodeClick (obj) {
+      this.addEmployees.departmentName = obj.name
+      this.departmentList = []
+    },
+    showQrDialog (src) {
+      this.qrcodeVisible = true
+      this.$nextTick(() => {
+        QRCode.toCanvas(this.$refs.canvas, src, function (error) {
+          if (error) console.error(error)
+          console.log('success!')
+        })
+      })
     }
+
   }
 }
 </script>
 
 <style scoped lang='scss'>
+.el-input {
+  width: 70%;
+}
 </style>
