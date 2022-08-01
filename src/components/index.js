@@ -6,10 +6,12 @@
 // 但是插件只要我们设置好了，用户在使用的时候只有一行
 import PageTool from './PageTool'
 import UploadImage from './UploadImage'
+import FullScreen from './FullScreen'
 export default {
   // install安装
   install (Vue) {
     Vue.component('PageTool', PageTool)
     Vue.component('UploadImage', UploadImage)
+    Vue.component('FullScreen', FullScreen)
   }
 }

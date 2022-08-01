@@ -8,7 +8,7 @@ const whiteList = ['/login', '/404']
 
 // to 去哪 from 来自哪里 next 放行
 // 前置路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // 开启进度效果
   NProgress.start()
   // 权限控制
@@ -22,8 +22,14 @@ router.beforeEach((to, from, next) => {
       if (!store.state.user.userInfo.id) {
         // 这块ajax只会发送一次，优化了一下，当它不为空的时候就不在发送
         // 当用户手里有token并且访问的不是登录页面，那就应该请求个人资料
-        store.dispatch('user/getInfo')
+        const { roles } = await store.dispatch('user/getInfo')
+        console.log(roles.menus)
+        const newRoutes = await store.dispatch('permission/filter', roles.menus)
+        router.addRoutes([...newRoutes, { path: '*', redirect: '/404', hidden: true }])
+        // to.path 就是当前路径
+        next(to.path)
       }
+      console.log(router.options.routes)
       next() // 放行
     }
   } else {

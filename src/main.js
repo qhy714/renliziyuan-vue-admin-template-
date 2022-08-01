@@ -30,7 +30,9 @@ import '@/permission' // permission control 权限控制
 // }
 
 // set ElementUI lang to EN
-Vue.use(ElementUI)
+Vue.use(ElementUI, {
+  i18n: (key, value) => i18n.t(key, value)
+})
 // 如果想要中文版 element-ui，按如下方式声明
 // Vue.use(ElementUI)
 
@@ -58,7 +60,13 @@ import Print from 'vue-print-nb'
 // Global instruction
 Vue.use(Print)
 
+import mixins from './mixins'
+Vue.mixin(mixins)
+
+import i18n from './views/lang'
+
 new Vue({
+  i18n,
   el: '#app',
   router,
   store,

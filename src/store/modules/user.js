@@ -1,5 +1,6 @@
 import { login, getInfo, getUserDetailById } from '@/api/user'
 import { setToken, getToken, removeToken, setTime } from '@/utils/auth'
+import { resetRouter } from '@/router'
 const state = {
   token: getToken(),
   userInfo: {}
@@ -31,10 +32,14 @@ const actions = {
     const res1 = await getUserDetailById(res.userId)
 
     context.commit('setUserInfo', { ...res, ...res1 })
+    return res
   },
   logout (context) {
     context.commit('removeToken')
     context.commit('removeUserInfo')
+    resetRouter()
+    // 把vuex中的permission/routes清空一下
+    context.commit('permission/setRoutes', [], { root: true })
   }
 }
 

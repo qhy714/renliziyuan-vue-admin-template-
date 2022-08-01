@@ -53,10 +53,10 @@ export const constantRoutes = [
       component: () => import('@/views/dashboard/index'),
       meta: { title: '首页', icon: 'dashboard' }
     }]
-  },
+  }
 
   // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  // { path: '*', redirect: '/404', hidden: true }
 ]
 
 // 动态路由
@@ -66,60 +66,78 @@ export const asyncRoutes = [
     component: Layout,
     children: [{
       path: '',
-      name: 'Departments',
+      name: 'departments',
       component: () => import('@/views/departments/index'),
       meta: { title: '组织架构', icon: 'tree' }
-    }]
+    }],
+    meta: {
+      name: 'departments'
+    }
   },
   {
     path: '/employees',
     component: Layout,
     children: [{
       path: '',
-      name: 'Employees',
+      name: 'employees',
       component: () => import('@/views/employees/index'),
       meta: { title: '员工', icon: 'people' }
-    }]
+    }],
+    meta: {
+      name: 'employees'
+    }
   },
   {
-    path: '/setting',
+    path: '/settings',
     component: Layout,
     children: [{
       path: '',
-      name: 'Setting',
+      name: 'settings',
       component: () => import('@/views/setting/index'),
       meta: { title: '设置', icon: 'setting' }
-    }]
+    }],
+    meta: {
+      name: 'settings'
+    }
   },
   {
-    path: '/permission',
+    path: '/permissions',
     component: Layout,
     children: [{
       path: '',
-      name: 'Permission',
+      name: 'permissions',
       component: () => import('@/views/permission/index'),
       meta: { title: '权限管理', icon: 'lock' }
-    }]
+    }],
+    meta: {
+      name: 'permissions'
+    }
   },
   {
-    path: '/social',
+    path: '/social_securitys',
     component: Layout,
     children: [{
       path: '',
-      name: 'Social',
+      name: 'social_securitys',
       component: () => import('@/views/social/index'),
       meta: { title: '社保', icon: 'table' }
-    }]
+    }],
+    meta: {
+      name: 'social_securitys'
+    }
   },
   {
     path: '/attendances',
     component: Layout,
     children: [{
       path: '',
-      name: 'Attendances',
+      name: 'attendances',
       component: () => import('@/views/attendances/index'),
       meta: { title: '考勤', icon: 'skill' }
-    }]
+    }],
+    meta: {
+      name: 'attendances'
+    }
   },
 
   {
@@ -127,10 +145,13 @@ export const asyncRoutes = [
     component: Layout,
     children: [{
       path: '',
-      name: 'Salarys',
+      name: 'salarys',
       component: () => import('@/views/salarys/index'),
       meta: { title: '工资', icon: 'money' }
-    }]
+    }],
+    meta: {
+      name: 'salarys'
+    }
   },
 
   {
@@ -138,10 +159,13 @@ export const asyncRoutes = [
     component: Layout,
     children: [{
       path: '',
-      name: 'Approvals',
+      name: 'approvals',
       component: () => import('@/views/approvals/index'),
       meta: { title: '审批', icon: 'tree-table' }
-    }]
+    }],
+    meta: {
+      name: 'approvals'
+    }
   },
   {
     path: '/import',
@@ -149,9 +173,12 @@ export const asyncRoutes = [
     hidden: true,
     children: [{
       path: '',
-      name: 'Import',
+      name: 'import',
       component: () => import('@/views/import/index.vue')
-    }]
+    }],
+    meta: {
+      name: 'employees'
+    }
   },
   {
     path: '/employee/detail/:id',
@@ -162,7 +189,10 @@ export const asyncRoutes = [
       name: 'EmployeeDetail',
       component: () => import('@/views/employees/detail.vue'),
       props: true
-    }]
+    }],
+    meta: {
+      name: 'employees'
+    }
   }
 
 ]
@@ -172,7 +202,8 @@ const createRouter = () => new Router({
   scrollBehavior: () => ({ y: 0 }),
 
   // 只是临时写法，还没开始做权限，假设不管是谁都可以看到页面
-  routes: [...constantRoutes, ...asyncRoutes]
+  // 只保留静态路由表
+  routes: [...constantRoutes]
 })
 
 const router = createRouter()
